@@ -1,11 +1,7 @@
 'use strict'
 
-const { isFromFrontend, splitJwt } = require('../utils')
-const {
-  COOKIE_NAME,
-  payloadOpts,
-  headersAndSignatureOpts
-} = require('../config')
+const { isFromFrontend } = require('../utils')
+const {getCookies} = require("../lib/cookies");
 
 module.exports = (config, { strapi }) => {
   return async ({ request, response, cookies }, next) => {
@@ -17,14 +13,9 @@ module.exports = (config, { strapi }) => {
       response.status === 200 &&
       response.body.jwt
     ) {
-      const { payload, headersAndSignature } = splitJwt(response.body.jwt)
-
-      cookies.set(COOKIE_NAME.PAYLOAD, payload, payloadOpts)
-      cookies.set(
-        COOKIE_NAME.HEADER_SIGNATURE,
-        headersAndSignature,
-        headersAndSignatureOpts
-      )
+      const [payload, headersAndSignature ] = getCookies(response.body.jwt)
+      cookies.set(payload.name, payload.payload, payload.opts)
+      cookies.set(headersAndSignature.name, headersAndSignature.payload, headersAndSignature.opts)
     }
   }
 }

@@ -7,6 +7,8 @@ const permissionsRoutes = require('@strapi/plugin-users-permissions/server/route
 
 const jwtCookieGetter = require('./middlewares/getter')
 const jwtCookieSetter = require('./middlewares/setter')
+const { getCookies } = require('./lib/cookies')
+
 
 const { COOKIE_NAME, destroyCookieOpts } = require('./config')
 
@@ -60,6 +62,14 @@ module.exports = (userConfig) => (plugin) => {
     ...roleRoutes,
     ...permissionsRoutes
   ]
+
+  const jwtService = plugin.services.jwt;
+
+  plugin.services.jwt = ({strapi}) => {
+    const service = jwtService({ strapi })
+    service.getJwtCookies = getCookies
+    return service
+  }
 
   // apply user custom config strapi-server
   if (typeof userConfig === 'function') {
